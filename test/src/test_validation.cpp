@@ -22,7 +22,7 @@ TEST_CASE("shape_from_py_array passes for 1D array")
 {
     py::scoped_interpreter guard{};
     // 1D array of length 6
-    py::array_t<int> arr({ 6 });
+    py::array_t<int> arr(std::vector<int>{ 6 });
     auto shape = shape_from_py_array<int>(arr, { 1, 2, 3 }, 6);
     CHECK(shape == std::vector<size_t>{6});
 }
