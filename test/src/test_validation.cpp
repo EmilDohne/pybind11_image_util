@@ -12,6 +12,8 @@
 
 #include "py_img_util/validation.h"
 
+#include "test_utils.h"
+
 namespace py = pybind11;
 using namespace NAMESPACE_PY_IMAGE_UTIL::detail;
 
@@ -20,42 +22,50 @@ using namespace NAMESPACE_PY_IMAGE_UTIL::detail;
 // -----------------------------------------------------------------------------------
 TEST_CASE("shape_from_py_array passes for 1D array")
 {
-    py::scoped_interpreter guard{};
-    // 1D array of length 6
-    py::array_t<int> arr(std::vector<int>{ 6 });
-    auto shape = shape_from_py_array<int>(arr, { 1, 2, 3 }, 6);
-    CHECK(shape == std::vector<size_t>{6});
+    test_utils::with_python([]()
+        {
+            // 1D array of length 6
+            py::array_t<int> arr(std::vector<int>{ 6 });
+            auto shape = shape_from_py_array<int>(arr, { 1, 2, 3 }, 6);
+            CHECK(shape == std::vector<size_t>{6});
+        });
 }
 
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
 TEST_CASE("shape_from_py_array passes for 3D array")
 {
-    py::scoped_interpreter guard{};
-    // 3 channels, 2x2 image
-    py::array_t<float> arr({ 3, 2, 2 });
-    auto shape = shape_from_py_array<float>(arr, { 1, 2, 3 }, 12);
-    CHECK(shape == std::vector<size_t>{3, 2, 2});
+    test_utils::with_python([]()
+        {
+            // 3 channels, 2x2 image
+            py::array_t<float> arr({ 3, 2, 2 });
+            auto shape = shape_from_py_array<float>(arr, { 1, 2, 3 }, 12);
+            CHECK(shape == std::vector<size_t>{3, 2, 2});
+        });
 }
 
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
 TEST_CASE("shape_from_py_array throws when total_size mismatches for 3D")
 {
-    py::scoped_interpreter guard{};
-    // 3 channels, 2x2 image, but expect total_size = 10
-    py::array_t<float> arr({ 3, 2, 2 });
-    CHECK_THROWS_AS(shape_from_py_array<float>(arr, { 1, 2, 3 }, 10), py::value_error);
+    test_utils::with_python([]()
+        {
+            // 3 channels, 2x2 image, but expect total_size = 10
+            py::array_t<float> arr({ 3, 2, 2 });
+            CHECK_THROWS_AS(shape_from_py_array<float>(arr, { 1, 2, 3 }, 10), py::value_error);
+        });
 }
 
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
 TEST_CASE("shape_from_py_array throws for unsupported dims (4D)")
 {
-    py::scoped_interpreter guard{};
-    // 4D: unsupported by allowed_dims = {1,2,3}
-    py::array_t<double> arr({ 2, 2, 2, 2 });
-    CHECK_THROWS_AS(shape_from_py_array<double>(arr, { 1, 2, 3 }, 16), py::value_error);
+    test_utils::with_python([]()
+        {
+            // 4D: unsupported by allowed_dims = {1,2,3}
+            py::array_t<double> arr({ 2, 2, 2, 2 });
+            CHECK_THROWS_AS(shape_from_py_array<double>(arr, { 1, 2, 3 }, 16), py::value_error);
+        });
 }
 
 // -----------------------------------------------------------------------------------
@@ -169,38 +179,40 @@ TEST_CASE("check_shape throws for dimension count > 3")
 // -----------------------------------------------------------------------------------
 TEST_CASE("check_c_style_contiguous converts a transposed array to C order")
 {
-    py::scoped_interpreter guard{};
-
-    // 1) Create a C-contiguous 3×4 float array:
-    py::array_t<float> base({ 3, 4 });
-    for (py::ssize_t i = 0; i < 3; ++i)
-    {
-        for (py::ssize_t j = 0; j < 4; ++j)
+    test_utils::with_python([]()
         {
-            base.mutable_at(i, j) = static_cast<float>(i * 4 + j);
-        }
-    }
 
-    // 2) Transpose it via the .attr("T") call;
-    //    the resulting array is *not* C-contiguous:
-    py::array_t<float> transposed = base.attr("T").cast<py::array_t<float>>();
+            // 1) Create a C-contiguous 3×4 float array:
+            py::array_t<float> base({ 3, 4 });
+            for (py::ssize_t i = 0; i < 3; ++i)
+            {
+                for (py::ssize_t j = 0; j < 4; ++j)
+                {
+                    base.mutable_at(i, j) = static_cast<float>(i * 4 + j);
+                }
+            }
 
-    // Verify that it is indeed not C-contiguous (so that our test is valid):
-    auto info_before = transposed.request();
-    bool is_c_before = (transposed.flags() & py::array::c_style) != 0;
-    REQUIRE_FALSE(is_c_before);
+            // 2) Transpose it via the .attr("T") call;
+            //    the resulting array is *not* C-contiguous:
+            py::array_t<float> transposed = base.attr("T").cast<py::array_t<float>>();
 
-    // 3) Call check_c_style_contiguous, which should replace 'transposed' with a new C-contiguous array:
-    check_c_style_contiguous(transposed);
+            // Verify that it is indeed not C-contiguous (so that our test is valid):
+            auto info_before = transposed.request();
+            bool is_c_before = (transposed.flags() & py::array::c_style) != 0;
+            REQUIRE_FALSE(is_c_before);
 
-    // 4) After conversion, the array must be C-contiguous:
-    bool is_c_after = (transposed.flags() & py::array::c_style) != 0;
-    CHECK(is_c_after);
+            // 3) Call check_c_style_contiguous, which should replace 'transposed' with a new C-contiguous array:
+            check_c_style_contiguous(transposed);
 
-    // 5) As a final sanity check: in true C-order, the last‐dimension stride (stride for index 1) = sizeof(float).
-    auto info_after = transposed.request();
-    size_t stride_last = static_cast<size_t>(info_after.strides[1]); // in bytes
-    CHECK(stride_last == sizeof(float));
+            // 4) After conversion, the array must be C-contiguous:
+            bool is_c_after = (transposed.flags() & py::array::c_style) != 0;
+            CHECK(is_c_after);
+
+            // 5) As a final sanity check: in true C-order, the last‐dimension stride (stride for index 1) = sizeof(float).
+            auto info_after = transposed.request();
+            size_t stride_last = static_cast<size_t>(info_after.strides[1]); // in bytes
+            CHECK(stride_last == sizeof(float));
+        });
 }
 
 

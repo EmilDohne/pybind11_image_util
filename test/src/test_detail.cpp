@@ -145,70 +145,78 @@ TEST_CASE("from_py::view enforces C-contiguity for non-contiguous input")
 // -----------------------------------------------------------------------------------
 TEST_CASE("from_py::view throws on dimension mismatch")
 {
-    py::scoped_interpreter guard{};
-    py::array_t<float> arr({ 4, 4 });
-    // expected dims correspond to size 12
-    CHECK_THROWS_AS(from_py::view<float>(arr, 3, 4), py::value_error);
+    test_utils::with_python([]()
+        {
+            py::array_t<float> arr({ 4, 4 });
+            // expected dims correspond to size 12
+            CHECK_THROWS_AS(from_py::view<float>(arr, 3, 4), py::value_error);
+        });
 }
 
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
 TEST_CASE("to_py::from_vector (copy) creates a new NumPy array")
 {
-    py::scoped_interpreter guard{};
-    std::vector<double> data = { 2.2, 3.3, 4.4, 5.5 };
-    std::vector<size_t> shape = { 2, 2 };
-    auto arr = to_py::from_vector<double>(data, shape);
+    test_utils::with_python([]()
+        {
+            std::vector<double> data = { 2.2, 3.3, 4.4, 5.5 };
+            std::vector<size_t> shape = { 2, 2 };
+            auto arr = to_py::from_vector<double>(data, shape);
 
-    CHECK(arr.ndim() == 2);
-    CHECK(arr.shape(0) == 2);
-    CHECK(arr.shape(1) == 2);
-    // Ensure contents match
-    auto ptr = static_cast<double*>(arr.mutable_data());
-    CHECK(ptr[0] == doctest::Approx(2.2));
-    CHECK(ptr[3] == doctest::Approx(5.5));
+            CHECK(arr.ndim() == 2);
+            CHECK(arr.shape(0) == 2);
+            CHECK(arr.shape(1) == 2);
+            // Ensure contents match
+            auto ptr = static_cast<double*>(arr.mutable_data());
+            CHECK(ptr[0] == doctest::Approx(2.2));
+            CHECK(ptr[3] == doctest::Approx(5.5));
 
-    // Modifying the original vector should NOT affect the array (copy semantic)
-    data[0] = -1.0;
-    CHECK(ptr[0] == doctest::Approx(2.2));
+            // Modifying the original vector should NOT affect the array (copy semantic)
+            data[0] = -1.0;
+            CHECK(ptr[0] == doctest::Approx(2.2));
+        });
 }
 
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
 TEST_CASE("to_py::from_vector (move) transfers ownership correctly")
 {
-    py::scoped_interpreter guard{};
-    std::vector<int> data = { 7, 8, 9, 10, 11, 12 };
-    std::vector<size_t> shape = { 3, 2 };
-    // Move the vector into from_vector
-    auto arr = to_py::from_vector<int>(std::move(data), shape);
+    test_utils::with_python([]()
+        {
+            std::vector<int> data = { 7, 8, 9, 10, 11, 12 };
+            std::vector<size_t> shape = { 3, 2 };
+            // Move the vector into from_vector
+            auto arr = to_py::from_vector<int>(std::move(data), shape);
 
-    CHECK(arr.ndim() == 2);
-    CHECK(arr.shape(0) == 3);
-    CHECK(arr.shape(1) == 2);
-    // Data should still be intact in the NumPy array
-    auto ptr = static_cast<int*>(arr.mutable_data());
-    CHECK(ptr[0] == 7);
-    CHECK(ptr[5] == 12);
+            CHECK(arr.ndim() == 2);
+            CHECK(arr.shape(0) == 3);
+            CHECK(arr.shape(1) == 2);
+            // Data should still be intact in the NumPy array
+            auto ptr = static_cast<int*>(arr.mutable_data());
+            CHECK(ptr[0] == 7);
+            CHECK(ptr[5] == 12);
 
-    // The original 'data' vector must now be empty (moved-from)
-    CHECK(data.empty());
+            // The original 'data' vector must now be empty (moved-from)
+            CHECK(data.empty());
+        });
 }
 
 // -----------------------------------------------------------------------------------
 // -----------------------------------------------------------------------------------
 TEST_CASE("to_py::from_view creates correct NumPy array from span")
 {
-    py::scoped_interpreter guard{};
-    std::array<float, 6> buffer = { 0.5f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f };
-    std::span<const float> span(buffer.data(), buffer.size());
-    std::vector<size_t> shape = { 2, 3 };
-    auto arr = to_py::from_view<float>(span, shape);
+    test_utils::with_python([]()
+        {
+            std::array<float, 6> buffer = { 0.5f, 1.5f, 2.5f, 3.5f, 4.5f, 5.5f };
+            std::span<const float> span(buffer.data(), buffer.size());
+            std::vector<size_t> shape = { 2, 3 };
+            auto arr = to_py::from_view<float>(span, shape);
 
-    CHECK(arr.ndim() == 2);
-    CHECK(arr.shape(0) == 2);
-    CHECK(arr.shape(1) == 3);
-    auto ptr = static_cast<float*>(arr.mutable_data());
-    CHECK(ptr[2] == doctest::Approx(2.5f));
-    CHECK(ptr[5] == doctest::Approx(5.5f));
+            CHECK(arr.ndim() == 2);
+            CHECK(arr.shape(0) == 2);
+            CHECK(arr.shape(1) == 3);
+            auto ptr = static_cast<float*>(arr.mutable_data());
+            CHECK(ptr[2] == doctest::Approx(2.5f));
+            CHECK(ptr[5] == doctest::Approx(5.5f));
+        });
 }

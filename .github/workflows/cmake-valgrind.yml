@@ -39,6 +39,9 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12' 
+        cache: 'pip' # caching pip dependencies
+
+    - run: pip install numpy
 
     - name: Configure CMake ${{ matrix.os }}-${{ matrix.compilercxx }}
       env:
