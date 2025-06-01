@@ -48,19 +48,6 @@ jobs:
       with:
         submodules: 'recursive'
         fetch-depth: 0
-        
-    # Further brew packages needed to run/install vcpkg dependencies
-    - name: Setup MacOS dependencies
-      if: matrix.os == 'macos-latest'
-      run: |
-          brew install autoconf
-          brew install libtool
-          brew install automake
-
-    - name: Initialize vcpkg
-      uses: lukka/run-vcpkg@v11
-      with:
-        vcpkgDirectory: '${{ github.workspace }}/thirdparty/vcpkg'
 
     - name: Configure CMake ${{ matrix.os }}-${{ matrix.compilercxx }}
       env:
