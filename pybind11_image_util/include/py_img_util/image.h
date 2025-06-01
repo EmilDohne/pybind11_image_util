@@ -46,7 +46,7 @@ namespace NAMESPACE_PY_IMAGE_UTIL
 	/// \return A const span over the flattened data
 	template <typename T>
 	const std::span<const T> from_py_array(
-		tag::view _,
+		[[maybe_unused]] tag::view _,
 		py::array_t<T>& data,
 		size_t expected_width,
 		size_t expected_height
@@ -66,7 +66,7 @@ namespace NAMESPACE_PY_IMAGE_UTIL
 	/// \return A const span over the flattened data
 	template <typename T>
 	const std::span<const T> from_py_array(
-		tag::view _,
+		[[maybe_unused]] tag::view _,
 		py::array_t<T>& data
 	)
 	{
@@ -100,7 +100,7 @@ namespace NAMESPACE_PY_IMAGE_UTIL
 	/// \return Flattened std::vector<T> with row-major order
 	template <typename T>
 	std::vector<T> from_py_array(
-		tag::vector _,
+		[[maybe_unused]] tag::vector _,
 		py::array_t<T>& data,
 		size_t expected_width,
 		size_t expected_height)
@@ -118,7 +118,7 @@ namespace NAMESPACE_PY_IMAGE_UTIL
 	/// \return Flattened std::vector<T> with row-major order
 	template <typename T>
 	std::vector<T> from_py_array(
-		tag::vector _,
+		[[maybe_unused]] tag::vector _,
 		py::array_t<T>& data
 	)
 	{

@@ -35,7 +35,7 @@ namespace NAMESPACE_PY_IMAGE_UTIL
 		{
 			std::vector<size_t> shape;
 			size_t sum = 1;
-			for (size_t i = 0; i < data.ndim(); ++i)
+			for (py::ssize_t i = 0; i < data.ndim(); ++i)
 			{
 				shape.push_back(data.shape(i));
 				sum *= data.shape(i);
@@ -47,7 +47,7 @@ namespace NAMESPACE_PY_IMAGE_UTIL
 				std::string error_msg = "Invalid number of dimensions received, array must have one of the following number of dimensions: { ";
 				for (size_t i = 0; i < allowed_dims.size() - 1; ++i)
 				{
-					error_msg += std::to_string(allowed_dims[i]), ", ";
+					error_msg += std::to_string(allowed_dims[i]) + ", ";
 				}
 				error_msg += std::to_string(allowed_dims.back());
 				error_msg += " }. Instead got: " + std::to_string(shape.size());
