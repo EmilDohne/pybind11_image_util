@@ -270,7 +270,7 @@ namespace NAMESPACE_PY_IMAGE_UTIL
 				std::string error_msg = "Invalid array dimension received: { ";
 				for (size_t i = 0; i < shape.size() - 1; ++i)
 				{
-					error_msg += std::to_string(shape[i]), ", ";
+					error_msg += std::to_string(shape[i]) + ", ";
 				}
 				error_msg += std::to_string(shape.back());
 				error_msg += " }. Expected these to sum up to " + std::format("{:L}", data.size()) + " but they instead sum up to ";
