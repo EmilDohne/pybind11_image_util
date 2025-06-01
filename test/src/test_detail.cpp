@@ -20,7 +20,7 @@ TEST_CASE("from_py::vector handles 1D data correctly")
 {
     py::scoped_interpreter guard{};
     // Create a C-contiguous 1D array of length 6
-    py::array_t<int> arr({ 6 });
+    py::array_t<int> arr(std::vector<int>{ 6 });
     for (py::ssize_t i = 0; i < 6; ++i)
     {
         arr.mutable_at(i) = static_cast<int>(i + 1);
