@@ -21,7 +21,14 @@ option(PY_IMAGE_UTIL_BUILD_TESTS OFF "Whether to build the test suite of py_img_
 # Add thirdparty libraries
 # --------------------------------------------------------------------------
 
-add_subdirectory(thirdparty/pybind11)
+find_package(pybind11 CONFIG QUIET)
+if (pybind11_FOUND)
+    message(STATUS "Using system-installed pybind11")
+else()
+    message(STATUS "Using embedded pybind11 from thirdparty/")
+    add_subdirectory(thirdparty/pybind11)
+endif()
+
 
 if (PY_IMAGE_UTIL_BUILD_TESTS)
     add_library(doctest INTERFACE)
