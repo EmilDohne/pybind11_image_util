@@ -5,7 +5,6 @@
 #include <unordered_map>
 #include <span>
 
-#include <pybind11/embed.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/detail/common.h>
