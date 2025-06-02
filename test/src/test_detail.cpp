@@ -22,10 +22,7 @@ TEST_CASE("from_py::vector handles 1D data correctly")
     test_utils::with_python([]()
         {
             // Create a C-contiguous 1D array of length 6
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-            py::array_t<float> arr(6);
-#pragma GCC diagnostic pop
+            py::array_t<float> arr(static_cast<py::ssize_t>(6));
             for (py::ssize_t i = 0; i < 6; ++i)
             {
                 arr.mutable_at(i) = static_cast<int>(i + 1);
