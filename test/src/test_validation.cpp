@@ -24,8 +24,8 @@ TEST_CASE("shape_from_py_array passes for 1D array")
     test_utils::with_python([]()
         {
             // 1D array of length 6
-            py::array_t<int> arr(std::vector<int>{ 6 });
-            auto shape = shape_from_py_array<int>(arr, { 1, 2, 3 }, 6);
+            py::array_t<float> arr(static_cast<py::ssize_t>(6));
+            auto shape = shape_from_py_array<float>(arr, { 1, 2, 3 }, 6);
             CHECK(shape == std::vector<size_t>{6});
         });
 }
