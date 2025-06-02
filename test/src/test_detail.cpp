@@ -22,14 +22,14 @@ TEST_CASE("from_py::vector handles 1D data correctly")
     test_utils::with_python([]()
         {
             // Create a C-contiguous 1D array of length 6
-            py::array_t<int> arr(std::vector<py::ssize_t>{ 6 });
+            py::array_t<float> arr(6);
             for (py::ssize_t i = 0; i < 6; ++i)
             {
                 arr.mutable_at(i) = static_cast<int>(i + 1);
             }
 
-            auto vec = from_py::vector<int>(arr, 6, 1);
-            CHECK(vec == std::vector<int>{1, 2, 3, 4, 5, 6});
+            auto vec = from_py::vector<float>(arr, 6, 1);
+            CHECK(vec == std::vector<float>{1, 2, 3, 4, 5, 6});
         });
 }
 
