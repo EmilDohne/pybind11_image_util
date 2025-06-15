@@ -83,7 +83,7 @@ namespace NAMESPACE_PY_IMAGE_UTIL
 			}
 
 			size_t stride = sizeof(T);  // Start with the size of the element in bytes
-			for (size_t i = shape.size() - 1; i >= static_cast<size_t>(0); --i)
+			for (int64_t i = static_cast<int64_t>(shape.size()) - 1; i >= 0; --i)
 			{
 				strides[i] = stride;
 				stride *= shape[i];  // Move to the next dimension stride in terms of element count
